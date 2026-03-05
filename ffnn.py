@@ -88,14 +88,14 @@ def load_data(train_data, val_data):
         training = json.load(training_f)
     with open(val_data) as valid_f:
         validation = json.load(valid_f)
-
+    
     tra = []
     val = []
     for elt in training:
         tra.append((elt["text"].split(),int(elt["stars"]-1)))
     for elt in validation:
         val.append((elt["text"].split(),int(elt["stars"]-1)))
-
+         
     return tra, val
 
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--epochs", type=int, required = True, help = "num of epochs to train")
     parser.add_argument("--train_data", required = True, help = "path to training data")
     parser.add_argument("--val_data", required = True, help = "path to validation data")
-    parser.add_argument("--test_data", default = "to fill", help = "path to test data")
+    parser.add_argument("--test_data", default = None, help = "path to test data (optional)")
     parser.add_argument('--do_train', action='store_true')
     args = parser.parse_args()
 
@@ -118,6 +118,19 @@ if __name__ == "__main__":
     train_data, valid_data = load_data(args.train_data, args.val_data) # X_data is a list of pairs (document, y); y in {0,1,2,3,4}
     vocab = make_vocab(train_data)
     vocab, word2index, index2word = make_indices(vocab)
+
+     #new load test data, optional
+    if args.test_data is not None:
+        print("========== Loading test data ==========")
+        test_data = load_data(args.test_data)
+        test_data = convert_to_vector_representation(test_data, word2index)
+    else:
+        print("No test data provided.")
+        
+    loss = None
+    correct = 0
+    total = 0
+
 
     print("========== Vectorizing data ==========")
     train_data = convert_to_vector_representation(train_data, word2index)
