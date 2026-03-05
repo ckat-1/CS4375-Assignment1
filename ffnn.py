@@ -32,10 +32,13 @@ class FFNN(nn.Module):
 
     def forward(self, input_vector):
         # [to fill] obtain first hidden layer representation
+        hidden_layer = self.W1(input_vector) #apply linear transformation
 
         # [to fill] obtain output layer representation
+        output_layer=self.W2(hidden_layer) #applu second linear transformation
 
         # [to fill] obtain probability dist.
+        predicted_vector = self.softmax(output_layer) #apply softmax to get probabilities
 
         return predicted_vector
 
@@ -119,10 +122,15 @@ if __name__ == "__main__":
     print("========== Vectorizing data ==========")
     train_data = convert_to_vector_representation(train_data, word2index)
     valid_data = convert_to_vector_representation(valid_data, word2index)
-    
 
     model = FFNN(input_dim = len(vocab), h = args.hidden_dim)
     optimizer = optim.SGD(model.parameters(),lr=0.01, momentum=0.9)
+
+
+    #initalizing lists to store losses
+    train_losses=[]
+    val_losses=[]
+
     print("========== Training for {} epochs ==========".format(args.epochs))
     for epoch in range(args.epochs):
         model.train()
@@ -152,10 +160,13 @@ if __name__ == "__main__":
             loss = loss / minibatch_size
             loss.backward()
             optimizer.step()
+       
+        train_losses.append(loss.item);  #new code
         print("Training completed for epoch {}".format(epoch + 1))
         print("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
         print("Training time for this epoch: {}".format(time.time() - start_time))
-
+        
+        print("Training loss for epoch {}".format(epoch+1, loss.item()))  #new code
 
         loss = None
         correct = 0
@@ -182,6 +193,10 @@ if __name__ == "__main__":
         print("Validation completed for epoch {}".format(epoch + 1))
         print("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
         print("Validation time for this epoch: {}".format(time.time() - start_time))
+    
+    with open('losses.json','w') as f: 
+            json.dump({'train_losses': train_losses,'val_losses': val_losses}, f)
+        #new code
 
     # write out to results/test.out
     
