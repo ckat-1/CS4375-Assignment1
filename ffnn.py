@@ -119,14 +119,7 @@ if __name__ == "__main__":
     vocab = make_vocab(train_data)
     vocab, word2index, index2word = make_indices(vocab)
 
-     #new load test data, optional
-    if args.test_data is not None:
-        print("========== Loading test data ==========")
-        test_data = load_data(args.test_data)
-        test_data = convert_to_vector_representation(test_data, word2index)
-    else:
-        print("No test data provided.")
-        
+
     loss = None
     correct = 0
     total = 0
