@@ -105,7 +105,7 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--epochs", type=int, required = True, help = "num of epochs to train")
     parser.add_argument("--train_data", required = True, help = "path to training data")
     parser.add_argument("--val_data", required = True, help = "path to validation data")
-    parser.add_argument("--test_data", default = None, help = "path to test data (optional)")
+    parser.add_argument("--test_data", default = None, help = "path to test data (optional)") #changed
     parser.add_argument('--do_train', action='store_true')
     args = parser.parse_args()
 
@@ -119,6 +119,14 @@ if __name__ == "__main__":
     vocab = make_vocab(train_data)
     vocab, word2index, index2word = make_indices(vocab)
 
+    #test data if provided
+    test_data =[]
+    if args.test_data:
+        print("========== Loading training data ==========")
+        with open(args.test_data) as test_f:
+            test_json = json.load(test_f)
+            for elt in test_json:
+                test_data.append((elt["text"].split(), int(elt["stars"] -1)))
 
     loss = None
     correct = 0
@@ -128,6 +136,9 @@ if __name__ == "__main__":
     print("========== Vectorizing data ==========")
     train_data = convert_to_vector_representation(train_data, word2index)
     valid_data = convert_to_vector_representation(valid_data, word2index)
+    #test data
+    if test_data:
+        test_data = convert_to_vector_representation(test_data,word2index)
 
     model = FFNN(input_dim = len(vocab), h = args.hidden_dim)
     optimizer = optim.SGD(model.parameters(),lr=0.01, momentum=0.9)
@@ -171,8 +182,7 @@ if __name__ == "__main__":
         print("Training completed for epoch {}".format(epoch + 1))
         print("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
         print("Training time for this epoch: {}".format(time.time() - start_time))
-        
-        print("Training loss for epoch {}".format(epoch+1, loss.item()))  #new code
+        print("Training loss for epoch {}: {}".format(epoch+1, loss.item()))  #new code
 
         loss = None
         correct = 0
@@ -199,10 +209,24 @@ if __name__ == "__main__":
         print("Validation completed for epoch {}".format(epoch + 1))
         print("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
         print("Validation time for this epoch: {}".format(time.time() - start_time))
-    
-    with open('losses.json','w') as f: 
-            json.dump({'train_losses': train_losses,'val_losses': val_losses}, f)
+        print("Validation loss for epoch {}: {}".format(epoch+1, loss.item()))  #new code
+
         #new code
+     # Optionally evaluate on test data
+    if args.test_data:
+        print("========== Evaluating on test data ==========")
+        model.eval()  # Set model to evaluation mode
+        correct = 0
+        total = 0
+
+        with torch.no_grad():  # No need to compute gradients
+            for input_vector, gold_label in test_data:
+                predicted_vector = model(input_vector)
+                predicted_label = torch.argmax(predicted_vector)
+                correct += int(predicted_label == gold_label)
+                total += 1
+
+        print("Test accuracy: {:.2f}%".format((correct / total) * 100))
 
     # write out to results/test.out
     
