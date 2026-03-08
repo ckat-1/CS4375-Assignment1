@@ -31,14 +31,18 @@ class RNN(nn.Module):
 
     def forward(self, inputs):
         # [to fill] obtain hidden layer representation (https://pytorch.org/docs/stable/generated/torch.nn.RNN.html)
-        _, hidden = 
-        # [to fill] obtain output layer representations
+        out,hidden = self.rnn(inputs) #output and hidden states
 
-        # [to fill] sum over output 
+        # [to fill] obtain output layer representations
+        z = self.W(out) #last hidden state
+
+        # [to fill] sum over output     
+        summed_output =torch.sum(z,dim=0).view(1,-1)
 
         # [to fill] obtain probability dist.
+        post_dist= self.softmax(summed_output)
 
-        return predicted_vector
+        return post_dist #changed from predicted
 
 
 def load_data(train_data, val_data):
@@ -62,7 +66,7 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--epochs", type=int, required = True, help = "num of epochs to train")
     parser.add_argument("--train_data", required = True, help = "path to training data")
     parser.add_argument("--val_data", required = True, help = "path to validation data")
-    parser.add_argument("--test_data", default = "to fill", help = "path to test data")
+    parser.add_argument("--test_data", default = None, help = "path to test data (optional)")
     parser.add_argument('--do_train', action='store_true')
     args = parser.parse_args()
 
@@ -92,6 +96,8 @@ if __name__ == "__main__":
         random.shuffle(train_data)
         model.train()
         # You will need further code to operationalize training, ffnn.py may be helpful
+        optimizer.zero_grad()
+
         print("Training started for epoch {}".format(epoch + 1))
         train_data = train_data
         correct = 0
@@ -112,8 +118,9 @@ if __name__ == "__main__":
                 input_words = input_words.translate(input_words.maketrans("", "", string.punctuation)).split()
 
                 # Look up word embedding dictionary
-                vectors = [word_embedding[i.lower()] if i.lower() in word_embedding.keys() else word_embedding['unk'] for i in input_words ]
-
+                vectors = [word_embedding[i.lower()] if i.lower() in word_embedding.keys()
+                            else word_embedding['unk'] for i in input_words ]
+                
                 # Transform the input into required shape
                 vectors = torch.tensor(vectors).view(len(vectors), 1, -1)
                 output = model(vectors)

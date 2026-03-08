@@ -122,7 +122,7 @@ if __name__ == "__main__":
     #test data if provided
     test_data =[]
     if args.test_data:
-        print("========== Loading training data ==========")
+        print("========== Loading testing data ==========")
         with open(args.test_data) as test_f:
             test_json = json.load(test_f)
             for elt in test_json:
