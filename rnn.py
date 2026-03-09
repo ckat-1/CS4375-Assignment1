@@ -147,8 +147,8 @@ if __name__ == "__main__":
         print(loss_total/loss_count)
         print("Training completed for epoch {}".format(epoch + 1))
         print("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
+        print("Training loss for epoch {}: {}".format(epoch+1, loss.item()))
         trainning_accuracy = correct/total
-
 
         model.eval()
         correct = 0
@@ -171,6 +171,7 @@ if __name__ == "__main__":
             # print(predicted_label, gold_label)
         print("Validation completed for epoch {}".format(epoch + 1))
         print("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
+        print("Validation loss for epoch {}: {}".format(epoch+1, loss.item()))
         validation_accuracy = correct/total
 
         if validation_accuracy < last_validation_accuracy and trainning_accuracy > last_train_accuracy:
