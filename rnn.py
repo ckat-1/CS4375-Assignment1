@@ -34,15 +34,15 @@ class RNN(nn.Module):
         out,hidden = self.rnn(inputs) #output and hidden states
 
         # [to fill] obtain output layer representations
-        z = self.W(out) #last output?
+        hidden=hidden[-1] #getting the last hidden layer
 
         # [to fill] sum over output     
-        summed_output =torch.sum(z,dim=0).view(1,-1)
+        summed_output = self.W(hidden)
 
         # [to fill] obtain probability dist.
-        post_dist= self.softmax(summed_output)
+        predicted_vector= self.softmax(summed_output)
 
-        return post_dist #changed from predicted
+        return predicted_vector
 
 
 def load_data(train_data, val_data):
@@ -188,12 +188,12 @@ if __name__ == "__main__":
 
         epoch += 1
         
-                 # saving results of training in csv file
+        # saving results of training in csv file
         file_exists = os.path.isfile("rnn_results.csv")
         with open("rnn_results.csv", "a") as f:                 # make sure that other outputs are appended to csv file (won't overwrite previous data)
             if not file_exists:
                 f.write("model,hidden_dim,epochs,epoch,training_loss,validation_loss\n")            # header
-            f.write(f"RNN,{args.hidden_dim},{args.epochs},{epoch+1},{training_loss},{validation_loss}\n")
+            f.write(f"RNN,{args.hidden_dim},{args.epochs},{epoch},{training_loss},{validation_loss}\n")
 
 
     # You may find it beneficial to keep track of training accuracy or training loss;
