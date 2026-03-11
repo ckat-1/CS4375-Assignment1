@@ -192,8 +192,8 @@ if __name__ == "__main__":
         file_exists = os.path.isfile("rnn_results.csv")
         with open("rnn_results.csv", "a") as f:                 # make sure that other outputs are appended to csv file (won't overwrite previous data)
             if not file_exists:
-                f.write("model,hidden_dim,epochs,epoch,training_loss,validation_loss\n")            # header
-            f.write(f"RNN,{args.hidden_dim},{args.epochs},{epoch},{training_loss},{validation_loss}\n")
+                f.write("model,hidden_dim,epochs,epoch,training_accuracy,validation_accuracy\n")            # header
+            f.write(f"RNN,{args.hidden_dim},{args.epochs},{epoch},{training_accuracy},{validation_accuracy}\n")
 
 
     # You may find it beneficial to keep track of training accuracy or training loss;
