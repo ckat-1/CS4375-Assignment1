@@ -34,7 +34,7 @@ class RNN(nn.Module):
         out,hidden = self.rnn(inputs) #output and hidden states
 
         # [to fill] obtain output layer representations
-        z = self.W(out) #last hidden state
+        z = self.W(out) #last output?
 
         # [to fill] sum over output     
         summed_output =torch.sum(z,dim=0).view(1,-1)
@@ -50,6 +50,7 @@ def load_data(train_data, val_data):
         training = json.load(training_f)
     with open(val_data) as valid_f:
         validation = json.load(valid_f)
+    
 
     tra = []
     val = []
@@ -147,8 +148,9 @@ if __name__ == "__main__":
         print(loss_total/loss_count)
         print("Training completed for epoch {}".format(epoch + 1))
         print("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
-        print("Training loss for epoch {}: {}".format(epoch+1, loss.item()))
-        trainning_accuracy = correct/total
+        training_loss = loss.item()
+        print("Training loss for epoch {}: {}".format(epoch+1, training_loss))
+        training_accuracy = correct/total
 
         model.eval()
         correct = 0
@@ -171,19 +173,27 @@ if __name__ == "__main__":
             # print(predicted_label, gold_label)
         print("Validation completed for epoch {}".format(epoch + 1))
         print("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
-        print("Validation loss for epoch {}: {}".format(epoch+1, loss.item()))
+        validation_loss = loss.item()
+        print("Validation loss for epoch {}: {}".format(epoch+1, validation_loss))
         validation_accuracy = correct/total
+        
 
-        if validation_accuracy < last_validation_accuracy and trainning_accuracy > last_train_accuracy:
+        if validation_accuracy < last_validation_accuracy and training_accuracy > last_train_accuracy:
             stopping_condition=True
             print("Training done to avoid overfitting!")
             print("Best validation accuracy is:", last_validation_accuracy)
         else:
             last_validation_accuracy = validation_accuracy
-            last_train_accuracy = trainning_accuracy
+            last_train_accuracy = training_accuracy
 
         epoch += 1
-
+        
+                 # saving results of training in csv file
+        file_exists = os.path.isfile("rnn_results.csv")
+        with open("rnn_results.csv", "a") as f:                 # make sure that other outputs are appended to csv file (won't overwrite previous data)
+            if not file_exists:
+                f.write("model,hidden_dim,epochs,epoch,training_loss,validation_loss\n")            # header
+            f.write(f"RNN,{args.hidden_dim},{args.epochs},{epoch+1},{training_loss},{validation_loss}\n")
 
 
     # You may find it beneficial to keep track of training accuracy or training loss;

@@ -177,10 +177,10 @@ if __name__ == "__main__":
             loss = loss / minibatch_size
             loss.backward()
             optimizer.step()
-       
+        training_accuracy= correct/total
         train_losses.append(loss.item);  #new code
         print("Training completed for epoch {}".format(epoch + 1))
-        print("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
+        print("Training accuracy for epoch {}: {}".format(epoch + 1, training_accuracy)) #changed correct/ total to training accuracy 
         print("Training time for this epoch: {}".format(time.time() - start_time))
         print("Training loss for epoch {}: {}".format(epoch+1, loss.item()))  #new code
 
@@ -206,27 +206,39 @@ if __name__ == "__main__":
                 else:
                     loss += example_loss
             loss = loss / minibatch_size
+        validation_accuracy = correct/total
         print("Validation completed for epoch {}".format(epoch + 1))
-        print("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
+        print("Validation accuracy for epoch {}: {}".format(epoch + 1,validation_accuracy)) #replaced correct/total w/ validation_accuracy 
         print("Validation time for this epoch: {}".format(time.time() - start_time))
         print("Validation loss for epoch {}: {}".format(epoch+1, loss.item()))  #new code
+        
+             #new code
+        # Optionally evaluate on test data
+        if args.test_data:
+            print("========== Evaluating on test data ==========")
+            model.eval()  # Set model to evaluation mode
+            correct = 0
+            total = 0
 
-        #new code
-     # Optionally evaluate on test data
-    if args.test_data:
-        print("========== Evaluating on test data ==========")
-        model.eval()  # Set model to evaluation mode
-        correct = 0
-        total = 0
+            with torch.no_grad():  # No need to compute gradients
+                for input_vector, gold_label in test_data:
+                    predicted_vector = model(input_vector)
+                    predicted_label = torch.argmax(predicted_vector)
+                    correct += int(predicted_label == gold_label)
+                    total += 1
+                    test_accuracy = correct/total 
 
-        with torch.no_grad():  # No need to compute gradients
-            for input_vector, gold_label in test_data:
-                predicted_vector = model(input_vector)
-                predicted_label = torch.argmax(predicted_vector)
-                correct += int(predicted_label == gold_label)
-                total += 1
+            print("Test accuracy: {:.2f}%".format((test_accuracy) * 100))
+        
+         # saving results of training in csv file
+        file_exists = os.path.isfile("ffnn_results.csv")
+        with open("ffnn_results.csv", "a") as f:                 # make sure that other outputs are appended to csv file (won't overwrite previous data)
+            if not file_exists:
+                f.write("model,hidden_dim,epochs,epoch,training_accuracy,validation_accuracy,test_accuracy\n")            # header
+            f.write(f"FFNN,{args.hidden_dim},{args.epochs},{epoch+1},{training_accuracy},{validation_accuracy}")
+            if args.test_data:
+                f.write(f", {test_accuracy} \n")
+            else: 
+                f.write(f"\n") #so if there is no test data we can start a new line
 
-        print("Test accuracy: {:.2f}%".format((correct / total) * 100))
-
-    # write out to results/test.out
     
